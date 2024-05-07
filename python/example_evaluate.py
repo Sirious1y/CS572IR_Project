@@ -9,14 +9,13 @@
 
 import os
 import numpy as np
-
 from scipy.io import loadmat
-
 from dataset import configdataset
 from download import download_datasets, download_features
 from evaluate import compute_map
 import numpy as np
 from scipy.io import loadmat, savemat
+from sklearn.preprocessing import normalize
 
 #---------------------------------------------------------------------
 # Set data folder and testing parameters
@@ -25,8 +24,8 @@ from scipy.io import loadmat, savemat
 data_root = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'data')
 # Check, and, if necessary, download test data (Oxford and Pairs), 
 # revisited annotation, and example feature vectors for evaluation
-download_datasets(data_root)
-download_features(data_root)
+# download_datasets(data_root)
+# download_features(data_root)
 
 # Set test dataset: roxford5k | rparis6k
 test_dataset = 'roxford5k'
@@ -42,12 +41,30 @@ cfg = configdataset(test_dataset, os.path.join(data_root, 'datasets'))
 
 # load query and database features
 print('>> {}: Loading features...'.format(test_dataset))    
-features = loadmat(os.path.join(data_root, 'features', '{}_resnet_rsfm120k_gem.mat'.format(test_dataset)))
+# features = loadmat(os.path.join(data_root, 'features', '{}_resnet_rsfm120k_gem.mat'.format(test_dataset)))
 # features = loadmat("/Users/liyunxiao/Desktop/revisitop/features/resnet_feature.mat")
-Q = features['Q']
-X = features['X']
+orig_features = loadmat('../features/roxford5k_resnet_rsfm120k_gem.mat')
+trad_features = loadmat('../features/features.mat')
+orig_features['Q'] = normalize(orig_features['Q'], norm='l2')
+orig_features['X'] = normalize(orig_features['X'], norm='l2')
+trad_features['Q'] = normalize(trad_features['Q'], norm='l2')
+trad_features['X'] = normalize(trad_features['X'], norm='l2')
 
 
+# Q = features['Q']
+# X = features['X']
+
+# Q = np.concatenate((orig_features['Q'], trad_features['Q']))
+# X = np.concatenate((orig_features['X'], trad_features['X']))
+
+# Q = trad_features['Q']
+# X = trad_features['X']
+
+Q = orig_features['Q']
+X = orig_features['X']
+
+print(Q.shape)
+print(X.shape)
 
 
 # perform search
